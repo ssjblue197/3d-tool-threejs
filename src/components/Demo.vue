@@ -1,5 +1,7 @@
 <template>
   <div class="w-full h-full" id="container">
+    <!-- <div class="center w-[600px] aspect-video relative">
+    </div> -->
     <canvas id="canvas"></canvas>
   </div>
 </template>
@@ -69,6 +71,13 @@ const loadModel = () => {
 
 function render() {
   renderRequested = false
+  controls.update()
+
+  if (resizeRendererToDisplaySize(renderer)) {
+    const canvas = renderer.domElement
+    camera.aspect = canvas.clientWidth / canvas.clientHeight
+    camera.updateProjectionMatrix()
+  }
   renderer && renderer.render(scene, camera)
 }
 
@@ -81,8 +90,9 @@ function requestRenderIfNotRequested() {
 
 function resizeRendererToDisplaySize(renderer) {
   const canvas = renderer.domElement
-  const width = canvas.clientWidth
-  const height = canvas.clientHeight
+  const pixelRatio = window.devicePixelRatio
+  const width = Math.floor(canvas.clientWidth * pixelRatio)
+  const height = Math.floor(canvas.clientHeight * pixelRatio)
   const needResize = canvas.width !== width || canvas.height !== height
   if (needResize) {
     renderer.setSize(width, height, false)
@@ -98,13 +108,14 @@ const initial = () => {
   scene.backgroundBlurriness = 0.5
 
   //CAMERA
-  camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 10)
-  camera.position.set(0, 0.8, 1.5)
+  camera = new THREE.PerspectiveCamera(90, canvas.clientWidth / canvas.clientHeight, 0.1, 10)
+  camera.position.set(0, 0.8, 2)
   camera.lookAt(0, 0, 0)
+  camera.updateProjectionMatrix()
 
   //RENDERER
   renderer = new THREE.WebGLRenderer({ antialias: true, canvas })
-  renderer.setSize(window.innerWidth, window.innerHeight, false)
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight, false) //config drawingbuffer size
 
   // GRID HELPER
   const size = 100
@@ -235,4 +246,10 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+#canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+</style>
